@@ -1,0 +1,17 @@
+# Jetbrains
+.idea
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Config files
+services/node/config.toml
+services/server/config.toml

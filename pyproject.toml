@@ -1,0 +1,21 @@
+[project]
+name = "simpletd"
+version = "0.1.0"
+description = "A simplified tdarr clone"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "shared-protocol",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "services/*",
+    "libs/*",
+]
+
+[tool.uv.sources]
+shared-protocol = { workspace = true }
