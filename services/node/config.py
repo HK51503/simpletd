@@ -10,9 +10,13 @@ class ClientConfig(BaseModel):
     node: str
     tmp_video_directory: str
 
+class InternalConfig(BaseModel):
+    is_https: bool = False
+
 class Config(BaseModel):
     server: ServerConfig
     client: ClientConfig
+    internal: InternalConfig = InternalConfig()
 
 def load_config():
     with open("config.toml", "rb") as f:
@@ -22,6 +26,8 @@ def load_config():
         c.client.node = socket.gethostname()
     if c.client.tmp_video_directory == "":
         c.client.tmp_video_directory = "videos/"
+
+
 
     return c
 

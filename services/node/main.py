@@ -2,6 +2,7 @@ import asyncio, signal, sys
 import typer
 from pydantic import ValidationError
 from typing import Optional
+import httpx
 
 
 from config import Config, config, save_config
@@ -30,6 +31,16 @@ def start(
         config.client.node = node
     if tmp_video_directory:
         config.client.tmp_video_directory = tmp_video_directory
+
+    # check https
+    try:
+        r = httpx.get(f"https://{config.server.host}:{config.server.port}/healthcheck")
+        if r.status_code == 200:
+            config.internal.is_https = True
+        else:
+            print(r)
+    except httpx.ConnectError:
+        print("https is recommended.")
 
     print(config)
 

@@ -13,7 +13,7 @@ from shared_protocol import Event, GetJob, CompletedDownload, CompletedTranscode
 from config import Config
 
 async def get_ws_connection(config: Config) -> ClientConnection:
-    uri = f"ws://{config.server.host}:{config.server.port}/ws"
+    uri = f"{'wss' if config.internal.is_https else 'ws'}://{config.server.host}:{config.server.port}/ws"
     connection = await connect(uri)
     return connection
 
@@ -33,7 +33,7 @@ async def get_job(ws: ClientConnection, config: Config) -> Event:
             print("No response received within 5 seconds. Retrying...")
 
 async def download_video(config: Config, job: Event):
-    async with httpx.AsyncClient(base_url=f"http://{config.server.host}:{config.server.port}") as client:
+    async with httpx.AsyncClient(base_url=f"{'https' if config.internal.is_https else 'http'}://{config.server.host}:{config.server.port}") as client:
         url = f"/videos/{job.data.id}"
         download_path = pathlib.Path(config.client.tmp_video_directory) / "original" / job.data.path
         download_path.parent.mkdir(exist_ok=True, parents=True)
@@ -57,7 +57,7 @@ async def file_chunk_generator(file: pathlib.Path):
             yield chunk
 
 async def upload_video(config: Config, job: Event):
-    async with httpx.AsyncClient(base_url=f"http://{config.server.host}:{config.server.port}") as client:
+    async with httpx.AsyncClient(base_url=f"{'https' if config.internal.is_https else 'http'}://{config.server.host}:{config.server.port}") as client:
         url = f"/videos/{job.data.id}"
         video = pathlib.Path(config.client.tmp_video_directory) / "output" / job.data.path
         response = await client.post(url, content=file_chunk_generator(video))

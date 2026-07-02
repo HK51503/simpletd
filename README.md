@@ -5,7 +5,7 @@ A simplified tdarr clone.
 ## Roadmap / To-Do
 
 ### Core Architecture & User Ideas
-- [ ] Implement wss/https
+- [x] Implement wss/https
 - [ ] Add codec templates (remove hardcoded videotoolbox)
 - [ ] Make deployable as a container or an executable
 - [ ] Add robust error handling
