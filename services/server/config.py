@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import tomllib
+import pathlib
 
 class ServerConfig(BaseModel):
     host: str
@@ -15,7 +16,7 @@ class Config(BaseModel):
 
 
 def load_config():
-    with open("config.toml", "rb") as f:
+    with open(pathlib.Path(__file__).parent / "config.toml", "rb") as f:
         data = tomllib.load(f)
     return Config(**data)
 

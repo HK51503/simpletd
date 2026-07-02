@@ -1,4 +1,4 @@
-import tomllib, tomli_w, socket
+import tomllib, tomli_w, socket, pathlib
 from pydantic import BaseModel
 
 class ServerConfig(BaseModel):
@@ -19,7 +19,7 @@ class Config(BaseModel):
     internal: InternalConfig = InternalConfig()
 
 def load_config():
-    with open("config.toml", "rb") as f:
+    with open(pathlib.Path(__file__).parent / "config.toml", "rb") as f:
         data = tomllib.load(f)
     c = Config(**data)
     if c.client.node == "":
@@ -32,7 +32,7 @@ def load_config():
     return c
 
 def save_config(config: Config):
-    with open("config.toml", "wb") as f:
+    with open(pathlib.Path(__file__).parent / "config.toml", "wb") as f:
         tomli_w.dump(config.model_dump(), f)
 
 config = load_config()
