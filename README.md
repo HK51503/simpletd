@@ -1,7 +1,7 @@
 ## What is simpletd?
 
 Simplified tdarr inspired distributed transcoding software. 
-Aiming for simplicity, minimal configuration, and reliable.
+Aiming for simplicity, minimal configuration, and reliability.
 
 
 ## How to use simpletd
@@ -40,7 +40,7 @@ uv run main.py start
 
 ### Configuring https
 Please keep in mind that although https is supported, there are no security measures to prevent a malicious user from downloading videos. 
-The links are really easy to guess (e.g. https://mydomain.com/videos/14). Do not use for really important stuff. I'm planning to implement a way to secure/encrypted connection.
+The links are really easy to guess (e.g. https://mydomain.com/videos/14). Do not use for really important stuff. I'm planning to implement a way to secure/encrypt connection.
 
 ## Roadmap / To-Do
 Some (Most) are AI generated, please don't bash me :)
