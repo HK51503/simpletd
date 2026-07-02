@@ -15,3 +15,4 @@ wheels/
 # Config files
 services/node/config.toml
 services/server/config.toml
+services/server/database.db
