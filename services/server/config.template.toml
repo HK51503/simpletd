@@ -1,7 +1,11 @@
 [server]
 host="0.0.0.0"
 port=51503
-key="your_key"
+key="your_key" # not in use yet, nothing will happen
 
 [paths]
+# Inside this directory, original/ and output/ will be created.
+# The files and folders in original/ will end up in output/ while keeping the folder structure.
+# e.g. /home/hk/simpletd/original/test.mp4 will be in /home/hk/simpletd/output/test.mp4.
+# /home/hk/simpletd should be specified for this example. Trailing slash is optional.
 video_directory=""

@@ -1,7 +1,11 @@
 [server]
 host="0.0.0.0"
 port=51503
-key="your_key"
+key="your_key" # not in use yet, nothing will happen
 
 [client]
+# Specify node name. If empty, it will use the hostname.
 node=""
+# Specify where the video will be downloaded.
+# If not specified, it will create services/node/videos folder.
+tmp_video_directory=""
