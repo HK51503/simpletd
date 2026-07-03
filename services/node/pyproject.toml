@@ -8,6 +8,7 @@ dependencies = [
     "aiofiles>=25.1.0",
     "ffmpeg-python>=0.2.0",
     "httpx>=0.28.1",
+    "pydantic>=2.13.4",
     "shared-protocol",
     "tomli-w>=1.2.0",
     "typer>=0.26.8",
