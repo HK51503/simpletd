@@ -24,7 +24,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         job.status = "downloading"
                         session.add(job)
                         session.commit()
-                        await websocket.send_json(Event(event="job_found", data=FoundJob(**{"id": job.id, "path": job.path})).model_dump())
+                        encoder = {"vcodec": "libsvtav1", "preset": 4, "crf": 26}
+                        await websocket.send_json(Event(event="job_found", data=FoundJob(**{"id": job.id, "path": job.path, "encoder": encoder})).model_dump())
                     else:
                         await websocket.send_json(Event(event="job_not_found", data=None).model_dump())
 

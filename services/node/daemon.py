@@ -5,7 +5,6 @@ import httpx
 import pathlib
 import aiofiles
 import ffmpeg
-from ffmpeg import overwrite_output
 from websockets.asyncio.client import connect, ClientConnection
 
 from shared_protocol import Event, GetJob, CompletedDownload, CompletedTranscode, CompletedUpload
@@ -35,7 +34,7 @@ async def get_job(ws: ClientConnection, config: Config) -> Event:
 async def download_video(config: Config, job: Event):
     async with httpx.AsyncClient(base_url=f"{'https' if config.internal.is_https else 'http'}://{config.server.host}:{config.server.port}") as client:
         url = f"/videos/{job.data.id}"
-        download_path = pathlib.Path(config.client.tmp_video_directory) / "original" / job.data.path
+        download_path = config.client.tmp_video_directory / "original" / job.data.path
         download_path.parent.mkdir(exist_ok=True, parents=True)
         try:
             async with client.stream("GET", url) as response:
@@ -59,24 +58,23 @@ async def file_chunk_generator(file: pathlib.Path):
 async def upload_video(config: Config, job: Event):
     async with httpx.AsyncClient(base_url=f"{'https' if config.internal.is_https else 'http'}://{config.server.host}:{config.server.port}") as client:
         url = f"/videos/{job.data.id}"
-        video = pathlib.Path(config.client.tmp_video_directory) / "output" / job.data.path
+        video = config.client.tmp_video_directory / "output" / job.data.path
         response = await client.post(url, content=file_chunk_generator(video))
         print(response)
 
 
 
 
-async def transcode_video(job: Event) -> int:
-    input_file = pathlib.Path(config.client.tmp_video_directory) / "original" / job.data.path
-    output_file = pathlib.Path(config.client.tmp_video_directory) / "output" / job.data.path
+async def transcode_video(config: Config, job: Event) -> int:
+    input_file = config.client.tmp_video_directory / "original" / job.data.path
+    output_file = config.client.tmp_video_directory / "output" / job.data.path
     output_file.parent.mkdir(exist_ok=True, parents=True)
-    encoder = {"vcodec": "hevc_videotoolbox", "video_bitrate": "20M", "acodec": "aac"}
-    args = ffmpeg.input(input_file.as_posix()).output(output_file.as_posix(), **encoder).compile(overwrite_output=True)
+    args = ffmpeg.input(input_file.as_posix()).output(output_file.as_posix(), **job.data.encoder).compile(overwrite_output=True)
 
     process = await asyncio.create_subprocess_exec(
         *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        # stdout=asyncio.subprocess.PIPE,
+        # stderr=asyncio.subprocess.PIPE
     )
     print(f"ffmpeg started with PID {process.pid}")
 
@@ -84,9 +82,9 @@ async def transcode_video(job: Event) -> int:
 
     return process.returncode
 
-async def clean_up_files(job: Event):
-    input_file = TMP_INPUT_PATH / job.data.path
-    output_file = TMP_OUTPUT_PATH / job.data.path
+async def clean_up_files(config: Config, job: Event):
+    input_file = config.client.tmp_video_directory / "original" / job.data.path
+    output_file = config.client.tmp_video_directory / "output" / job.data.path
     input_file.unlink(missing_ok=True)
     output_file.unlink(missing_ok=True)
 
@@ -101,7 +99,7 @@ async def node_client_loop(config: Config):
             await ws.send(Event(event="download_completed", data=CompletedDownload(node=config.client.node, id=job.data.id)).model_dump_json())
 
             # transcode
-            code = await transcode_video(job)
+            code = await transcode_video(config, job)
             await ws.send(
                 Event(
                     event="transcode_completed",
@@ -123,7 +121,7 @@ async def node_client_loop(config: Config):
                         )
                     ).model_dump_json())
 
-            await clean_up_files(job)
+            await clean_up_files(config, job)
 
 
         # except Exception as e:

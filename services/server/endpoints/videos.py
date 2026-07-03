@@ -15,7 +15,7 @@ async def stream_video(video_id: int, session: SessionDep):
     job = session.exec(select(Jobs).where(Jobs.deleted_at==None, Jobs.id==video_id)).first()
     if not job:
         raise HTTPException(status_code=404, detail="Video not found")
-    video_path = pathlib.Path(config.paths.video_directory) / "original" / job.path
+    video_path = config.paths.video_directory / "original" / job.path
     return FileResponse(video_path)
 
 @videos_router.post("/{video_id}")
@@ -24,7 +24,7 @@ async def get_video(video_id: int, session: SessionDep, request: Request):
     if not job:
         raise HTTPException(status_code=404, detail="Video not found")
     else:
-        video_path = pathlib.Path(config.paths.video_directory) / "output" / job.path
+        video_path = config.paths.video_directory / "output" / job.path
         video_path.parent.mkdir(exist_ok=True, parents=True)
         async with aiofiles.open(video_path, "wb") as f:
             async for chunk in request.stream():

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, DirectoryPath
 import tomllib
 import pathlib
 
@@ -8,7 +8,7 @@ class ServerConfig(BaseModel):
     key: str
 
 class PathsConfig(BaseModel):
-    video_directory: str
+    video_directory: DirectoryPath
 
 class Config(BaseModel):
     server: ServerConfig

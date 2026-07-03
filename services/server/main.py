@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from config import Config
 from database import create_db_and_tables, engine
 from db_models import Jobs
-from endpoints import videos_router, ws_router
+from endpoints import videos_router, ws_router, healthcheck_router
 from config import config
 
 def is_video(file: pathlib.Path) -> bool:
@@ -17,11 +17,11 @@ def is_video(file: pathlib.Path) -> bool:
 
 # todo: update sync logic
 def sync_db(config: Config):
-    video_dir = pathlib.Path(config.paths.video_directory)
+    video_dir = config.paths.video_directory
     input_folder = video_dir / "original"
     videos = [v for v in input_folder.rglob("*") if v.is_file() and is_video(v)]
     with Session(engine) as session:
-        db_items = session.exec(select(Jobs).where(Jobs.deleted_at==None)).all()
+        db_items = session.exec(select(Jobs).where(Jobs.deleted_at==None, Jobs.status=="pending")).all()
         videos_in_db = [input_folder / p.path for p in db_items]
         for v in videos:
             if v not in videos_in_db:
@@ -43,6 +43,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(videos_router)
 app.include_router(ws_router)
+app.include_router(healthcheck_router)
 
 
 if __name__ == "__main__":
