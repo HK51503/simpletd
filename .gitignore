@@ -16,3 +16,6 @@ wheels/
 services/node/config.toml
 services/server/config.toml
 services/server/database.db
+
+# videos
+*.mp4
