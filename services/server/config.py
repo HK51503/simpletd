@@ -7,12 +7,8 @@ class ServerConfig(BaseModel):
     port: int
     key: str
 
-class PathsConfig(BaseModel):
-    video_directory: DirectoryPath
-
 class Config(BaseModel):
     server: ServerConfig
-    paths: PathsConfig
 
 
 def load_config():

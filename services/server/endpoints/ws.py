@@ -6,7 +6,7 @@ from shared_protocol import Event, FoundJob
 from sqlmodel import Session, select
 
 from database import engine
-from db_models import Jobs
+from db.models import Job
 
 ws_router = APIRouter(prefix="/ws")
 
@@ -18,19 +18,18 @@ async def websocket_endpoint(websocket: WebSocket):
         with Session(engine) as session:
             match event.event:
                 case "get_job":
-                    job = session.exec(select(Jobs).where(Jobs.deleted_at==None, Jobs.status=="pending")).first()
+                    job = session.exec(select(Job).where(Job.deleted_at==None, Job.status=="pending")).first()
                     if job:
                         job.node = event.data.node
                         job.status = "downloading"
                         session.add(job)
                         session.commit()
-                        encoder = {"vcodec": "libsvtav1", "preset": 4, "crf": 26}
-                        await websocket.send_json(Event(event="job_found", data=FoundJob(**{"id": job.id, "path": job.path, "encoder": encoder})).model_dump())
+                        await websocket.send_json(Event(event="job_found", data=FoundJob(**{"id": job.id, "path": job.path, "encoder": job.library.encoder.data})).model_dump())
                     else:
                         await websocket.send_json(Event(event="job_not_found", data=None).model_dump())
 
                 case "download_completed":
-                    job = session.exec(select(Jobs).where(Jobs.deleted_at==None, Jobs.id==event.data.id)).first()
+                    job = session.exec(select(Job).where(Job.deleted_at==None, Job.id==event.data.id)).first()
                     if job.status == "downloading":
                         job.status = "transcoding"
                         job.start_time = str(datetime.datetime.now())
@@ -38,7 +37,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         session.commit()
 
                 case "transcode_completed":
-                    job = session.exec(select(Jobs).where(Jobs.deleted_at == None, Jobs.id == event.data.id)).first()
+                    job = session.exec(select(Job).where(Job.deleted_at == None, Job.id == event.data.id)).first()
                     if job.status == "transcoding":
                         if event.data.success:
                             job.status = "uploading"
@@ -49,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         session.commit()
 
                 case "upload_completed":
-                    job = session.exec(select(Jobs).where(Jobs.deleted_at == None, Jobs.id == event.data.id)).first()
+                    job = session.exec(select(Job).where(Job.deleted_at == None, Job.id == event.data.id)).first()
                     if job.status == "uploading":
                         job.status = "completed"
                         job.end_time = str(datetime.datetime.now())

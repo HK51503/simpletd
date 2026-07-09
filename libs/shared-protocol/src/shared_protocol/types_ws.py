@@ -6,7 +6,7 @@ class GetJob(BaseModel):
 class FoundJob(BaseModel):
     id: int
     path: str
-    encoder: dict
+    encoder: str
 
 class CompletedDownload(BaseModel):
     node: str
